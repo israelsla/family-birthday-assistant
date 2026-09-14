@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}כל בני המשפחה - Family Birthday Assistant{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">כל בני המשפחה</h1>
+    <a class="button" href="{{ url_for('main.add_member') }}">+ הוספת בן משפחה</a>
+</div>
+
+{% if members %}
+<div class="table-wrap">
+    <table class="members-table">
+        <thead>
+            <tr>
+                <th>שם</th>
+                <th>תאריך עברי</th>
+                <th>טלפון</th>
+                <th>סטטוס</th>
+                <th>פעולות</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in members %}
+            <tr class="{{ 'is-inactive' if not member.active }}">
+                <td>{{ member.name }}</td>
+                <td>
+                    {{ member.hebrew_day }} ב{{ member.hebrew_month }}{% if member.hebrew_year %} {{ member.hebrew_year }}{% endif %}
+                </td>
+                <td>{{ member.phone or '-' }}</td>
+                <td>
+                    {% if member.active %}
+                        <span class="badge badge--active">פעיל/ה</span>
+                    {% else %}
+                        <span class="badge badge--inactive">מושבת/ת</span>
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <a class="link-button" href="{{ url_for('main.edit_member', member_id=member.id) }}">עריכה</a>
+                    {% if member.active %}
+                    <form class="inline-form" method="post" action="{{ url_for('main.deactivate_member_route', member_id=member.id) }}" data-confirm="האם להשבית את {{ member.name }}?">
+                        <button type="submit" class="link-button link-button--danger">השבתה</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="empty-state">עדיין לא נוספו בני משפחה. אפשר להתחיל בלחיצה על "הוספת בן משפחה".</p>
+{% endif %}
+{% endblock %}

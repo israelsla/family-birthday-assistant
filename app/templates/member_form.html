@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'עריכת בן משפחה' if mode == 'edit' else 'הוספת בן משפחה' }} - Family Birthday Assistant{% endblock %}
+
+{% block content %}
+<h1 class="page-title">{{ 'עריכת בן משפחה' if mode == 'edit' else 'הוספת בן משפחה' }}</h1>
+
+<form class="member-form" method="post" action="{{ url_for('main.edit_member', member_id=member_id) if mode == 'edit' else url_for('main.add_member') }}">
+    <label>
+        שם מלא
+        <input type="text" name="name" required value="{{ member.name if member else '' }}">
+    </label>
+
+    <div class="form-row">
+        <label>
+            יום עברי
+            <input type="number" name="hebrew_day" min="1" max="30" required value="{{ member.hebrew_day if member else '' }}">
+        </label>
+
+        <label>
+            חודש עברי
+            <select name="hebrew_month" required>
+                <option value="" disabled {{ 'selected' if not member }}>בחר/י חודש</option>
+                {% for month in hebrew_months %}
+                <option value="{{ month }}" {{ 'selected' if member and member.hebrew_month == month }}>{{ month }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            שנה עברית (לא חובה)
+            <input type="number" name="hebrew_year" value="{{ member.hebrew_year if member and member.hebrew_year else '' }}">
+        </label>
+    </div>
+
+    <label>
+        טלפון (לא חובה)
+        <input type="tel" name="phone" value="{{ member.phone if member and member.phone else '' }}">
+    </label>
+
+    {% if mode == 'edit' %}
+    <label class="checkbox-label">
+        <input type="checkbox" name="active" {{ 'checked' if member.active }}>
+        פעיל/ה במערכת
+    </label>
+    {% endif %}
+
+    <div class="form-actions">
+        <button type="submit" class="button">{{ 'שמירת שינויים' if mode == 'edit' else 'הוספה' }}</button>
+        <a class="button button--secondary" href="{{ url_for('main.members_list') }}">ביטול</a>
+    </div>
+</form>
+{% endblock %}
