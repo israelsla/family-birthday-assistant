@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS family_members (
     hebrew_month TEXT NOT NULL CHECK (hebrew_month IN (
         'תשרי', 'חשוון', 'כסלו', 'טבת', 'שבט',
         'אדר', 'אדר א׳', 'אדר ב׳',
-        'ניסן', 'אייר', 'סיוון', 'תמוז', 'אב', 'אלול'
+        'ניסן', 'אייר', 'סיון', 'תמוז', 'אב', 'אלול'
     )),
     hebrew_year INTEGER,
     phone TEXT,
