@@ -12,17 +12,45 @@
         <div class="card__label">בני משפחה פעילים במערכת</div>
     </div>
 
+    <div class="card">
+        <div class="card__label card__label--title">🎉 ימי הולדת היום</div>
+        {% if todays_birthdays %}
+        <ul class="events-list">
+            {% for member in todays_birthdays %}
+            <li>{{ member.name }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="card__note">אין היום ימי הולדת</div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card__label card__label--title">📅 ימי הולדת קרובים</div>
+        {% if upcoming_birthdays %}
+        <ul class="events-list">
+            {% for member, days in upcoming_birthdays %}
+            <li>{{ member.name }} - בעוד {{ days }} {{ 'יום' if days == 1 else 'ימים' }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="card__note">אין ימי הולדת בשבועיים הקרובים</div>
+        {% endif %}
+    </div>
 </div>
 
 <div class="events-card">
-    <h2 class="events-card__title">🎊 אירועים משפחתיים</h2>
+    <div class="events-card__header">
+        <h2 class="events-card__title">🎊 אירועים משפחתיים</h2>
+        <a class="button" href="{{ url_for('main.add_event') }}">+ הוספת אירוע</a>
+    </div>
 
     <div class="events-section">
         <h3 class="events-section__title">היום</h3>
-        {% if todays_events %}
+        {% if todays_anniversaries %}
         <ul class="events-list">
-            {% for event in todays_events %}
-            <li><span class="events-list__icon">{{ event.icon }}</span> {{ event.label }}</li>
+            {% for label in todays_anniversaries %}
+            <li><span class="events-list__icon">💍</span> {{ label }}</li>
             {% endfor %}
         </ul>
         {% else %}
@@ -31,15 +59,23 @@
     </div>
 
     <div class="events-section">
-        <h3 class="events-section__title">בשבועיים הקרובים</h3>
-        {% if upcoming_events %}
+        <h3 class="events-section__title">קרוב (ימי נישואין ואירועים שהוספת)</h3>
+        {% if family_events %}
         <ul class="events-list">
-            {% for event in upcoming_events %}
-            <li><span class="events-list__icon">{{ event.icon }}</span> {{ event.label }} - בעוד {{ event.days }} {{ 'יום' if event.days == 1 else 'ימים' }}</li>
+            {% for event in family_events %}
+            <li>
+                <span class="events-list__icon">{{ event.icon }}</span> {{ event.label }} - בעוד {{ event.days }} {{ 'יום' if event.days == 1 else 'ימים' }}
+                {% if event.custom_id %}
+                <a class="link-button" href="{{ url_for('main.edit_event', event_id=event.custom_id) }}">עריכה</a>
+                <form class="inline-form" method="post" action="{{ url_for('main.delete_event', event_id=event.custom_id) }}" data-confirm="למחוק את האירוע '{{ event.label }}'?">
+                    <button type="submit" class="link-button link-button--danger">מחיקה</button>
+                </form>
+                {% endif %}
+            </li>
             {% endfor %}
         </ul>
         {% else %}
-        <div class="card__note">אין אירועים משפחתיים בשבועיים הקרובים</div>
+        <div class="card__note">אין אירועים משפחתיים קרובים</div>
         {% endif %}
     </div>
 </div>

@@ -1,3 +1,5 @@
+from datetime import date
+
 from app.db import get_db
 from app.hebrew_calendar import days_until, today as hebrew_today
 
@@ -131,6 +133,18 @@ def update_marriage_date(marriage_id, hebrew_day, hebrew_month, hebrew_year):
     db.commit()
 
 
+def create_marriage(spouse1_id, spouse2_id, hebrew_day, hebrew_month, hebrew_year):
+    db = get_db()
+    db.execute(
+        """
+        INSERT INTO marriages (spouse1_id, spouse2_id, hebrew_day, hebrew_month, hebrew_year)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (spouse1_id, spouse2_id, hebrew_day, hebrew_month, hebrew_year),
+    )
+    db.commit()
+
+
 def get_anniversaries_by_member_id():
     """Map each member id in a couple to (partner_name, marriage_row) for the members list."""
     result = {}
@@ -158,3 +172,52 @@ def get_anniversary_summary(within_days=UPCOMING_WINDOW_DAYS):
 
     upcoming_list.sort(key=lambda pair: pair[1])
     return today_list, upcoming_list
+
+
+def get_all_family_events():
+    db = get_db()
+    return db.execute("SELECT * FROM family_events ORDER BY event_date").fetchall()
+
+
+def get_family_event(event_id):
+    db = get_db()
+    return db.execute("SELECT * FROM family_events WHERE id = ?", (event_id,)).fetchone()
+
+
+def create_family_event(title, event_date, description):
+    db = get_db()
+    db.execute(
+        "INSERT INTO family_events (title, event_date, description) VALUES (?, ?, ?)",
+        (title, event_date, description),
+    )
+    db.commit()
+
+
+def update_family_event(event_id, title, event_date, description):
+    db = get_db()
+    db.execute(
+        "UPDATE family_events SET title = ?, event_date = ?, description = ? WHERE id = ?",
+        (title, event_date, description, event_id),
+    )
+    db.commit()
+
+
+def delete_family_event(event_id):
+    db = get_db()
+    db.execute("DELETE FROM family_events WHERE id = ?", (event_id,))
+    db.commit()
+
+
+def get_upcoming_family_events():
+    """Custom events (Bar Mitzvah, wedding, a gathering...) from today onward, soonest first."""
+    today_iso = date.today().isoformat()
+    db = get_db()
+    events = db.execute(
+        "SELECT * FROM family_events WHERE event_date >= ? ORDER BY event_date", (today_iso,)
+    ).fetchall()
+
+    result = []
+    for event in events:
+        days = (date.fromisoformat(event["event_date"]) - date.today()).days
+        result.append((event, days))
+    return result

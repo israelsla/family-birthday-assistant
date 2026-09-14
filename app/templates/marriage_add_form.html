@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}הוספת בן/בת זוג - Family Birthday Assistant{% endblock %}
+
+{% block content %}
+<h1 class="page-title">💍 הוספת בן/בת זוג</h1>
+
+<form class="member-form" method="post">
+    <div class="form-row">
+        <label>
+            בן/בת משפחה ראשון/ה
+            <select name="spouse1_id" required>
+                <option value="" disabled {{ 'selected' if not preselected_id }}>בחר/י</option>
+                {% for member in members %}
+                <option value="{{ member.id }}" {{ 'selected' if member.id == preselected_id }}>{{ member.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            בן/בת משפחה שני/ה
+            <select name="spouse2_id" required>
+                <option value="" disabled selected>בחר/י</option>
+                {% for member in members %}
+                <option value="{{ member.id }}">{{ member.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+
+    <p class="empty-state">תאריך הנישואין (לא חובה - אפשר למלא מאוחר יותר):</p>
+
+    <div class="form-row">
+        <label>
+            יום עברי
+            <input type="number" name="hebrew_day" min="1" max="30">
+        </label>
+
+        <label>
+            חודש עברי
+            <select name="hebrew_month">
+                <option value="" selected>לא ידוע</option>
+                {% for month in hebrew_months %}
+                <option value="{{ month }}">{{ month }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            שנה עברית
+            <input type="number" name="hebrew_year">
+        </label>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="button">הוספה</button>
+        <a class="button button--secondary" href="{{ url_for('main.members_list') }}">ביטול</a>
+    </div>
+</form>
+{% endblock %}

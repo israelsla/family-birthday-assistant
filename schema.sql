@@ -26,3 +26,11 @@ CREATE TABLE IF NOT EXISTS marriages (
     hebrew_year INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS family_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    event_date TEXT NOT NULL,
+    description TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

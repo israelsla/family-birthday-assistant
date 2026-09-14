@@ -47,7 +47,8 @@
                         <a class="link-button" href="{{ url_for('main.edit_marriage', marriage_id=marriage.id) }}">הוספה</a>
                         {% endif %}
                     {% else %}
-                    -
+                    לא ידוע
+                    <a class="link-button" href="{{ url_for('main.add_marriage', member_id=member.id) }}">הוספת בן/בת זוג</a>
                     {% endif %}
                 </td>
                 <td>{{ member.phone or '-' }}</td>

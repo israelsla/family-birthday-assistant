@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'עריכת אירוע' if mode == 'edit' else 'הוספת אירוע משפחתי' }} - Family Birthday Assistant{% endblock %}
+
+{% block content %}
+<h1 class="page-title">🎊 {{ 'עריכת אירוע' if mode == 'edit' else 'הוספת אירוע משפחתי' }}</h1>
+
+<form class="member-form" method="post">
+    <label>
+        כותרת (למשל: בר מצווה של X, ארוחת שישי אצל Y, מפגש חג)
+        <input type="text" name="title" required value="{{ event.title if event else '' }}">
+    </label>
+
+    <label>
+        תאריך
+        <input type="date" name="event_date" required value="{{ event.event_date if event else '' }}">
+    </label>
+
+    <label>
+        פרטים נוספים (לא חובה)
+        <input type="text" name="description" value="{{ event.description if event and event.description else '' }}">
+    </label>
+
+    <div class="form-actions">
+        <button type="submit" class="button">{{ 'שמירת שינויים' if mode == 'edit' else 'הוספה' }}</button>
+        <a class="button button--secondary" href="{{ url_for('main.dashboard') }}">ביטול</a>
+    </div>
+</form>
+{% endblock %}

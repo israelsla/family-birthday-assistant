@@ -41,14 +41,14 @@ def dashboard():
     active_count = models.count_active_members()
     todays_birthdays, upcoming_birthdays = models.get_birthday_summary()
     todays_anniversaries, upcoming_anniversaries = models.get_anniversary_summary()
+    upcoming_custom_events = models.get_upcoming_family_events()
 
-    todays_events = (
-        [{"icon": "🎂", "label": member["name"]} for member in todays_birthdays]
-        + [{"icon": "💍", "label": label} for label in todays_anniversaries]
-    )
-    upcoming_events = sorted(
-        [{"icon": "🎂", "label": member["name"], "days": days} for member, days in upcoming_birthdays]
-        + [{"icon": "💍", "label": label, "days": days} for label, days in upcoming_anniversaries],
+    family_events = sorted(
+        [{"icon": "💍", "label": label, "days": days, "custom_id": None} for label, days in upcoming_anniversaries]
+        + [
+            {"icon": "🎊", "label": event["title"], "days": days, "custom_id": event["id"]}
+            for event, days in upcoming_custom_events
+        ],
         key=lambda event: event["days"],
     )
 
@@ -56,8 +56,10 @@ def dashboard():
         "dashboard.html",
         active_count=active_count,
         today_hebrew_date=models.today_hebrew_string(),
-        todays_events=todays_events,
-        upcoming_events=upcoming_events,
+        todays_birthdays=todays_birthdays,
+        upcoming_birthdays=upcoming_birthdays,
+        todays_anniversaries=todays_anniversaries,
+        family_events=family_events,
     )
 
 
@@ -174,3 +176,100 @@ def edit_marriage(marriage_id):
         return redirect(url_for("main.members_list"))
 
     return render_template("marriage_form.html", marriage=marriage, hebrew_months=models.HEBREW_MONTHS)
+
+
+@bp.route("/marriages/add", methods=["GET", "POST"])
+def add_marriage():
+    preselected_id = request.args.get("member_id", type=int)
+    all_members = models.get_all_members()
+
+    if request.method == "POST":
+        try:
+            spouse1_id = int(request.form.get("spouse1_id", ""))
+            spouse2_id = int(request.form.get("spouse2_id", ""))
+        except ValueError:
+            spouse1_id = spouse2_id = None
+
+        hebrew_month = request.form.get("hebrew_month", "")
+        hebrew_day_raw = request.form.get("hebrew_day", "").strip()
+        hebrew_day = int(hebrew_day_raw) if hebrew_day_raw.isdigit() else None
+        hebrew_year_raw = request.form.get("hebrew_year", "").strip()
+        hebrew_year = int(hebrew_year_raw) if hebrew_year_raw.isdigit() else None
+
+        date_given = hebrew_day is not None or hebrew_month or hebrew_year
+        date_valid = not date_given or (
+            hebrew_month in models.HEBREW_MONTHS and hebrew_day is not None and 1 <= hebrew_day <= 30
+        )
+
+        if not spouse1_id or not spouse2_id or spouse1_id == spouse2_id or not date_valid:
+            flash("נא לבחור שני בני משפחה שונים, ואם ממלאים תאריך - שיהיה תקין במלואו", "error")
+            return render_template(
+                "marriage_add_form.html",
+                members=all_members,
+                preselected_id=preselected_id,
+                hebrew_months=models.HEBREW_MONTHS,
+            )
+
+        if not hebrew_month:
+            hebrew_month = None
+
+        models.create_marriage(spouse1_id, spouse2_id, hebrew_day, hebrew_month, hebrew_year)
+        flash("בן/בת הזוג נוספו בהצלחה", "success")
+        return redirect(url_for("main.members_list"))
+
+    return render_template(
+        "marriage_add_form.html",
+        members=all_members,
+        preselected_id=preselected_id,
+        hebrew_months=models.HEBREW_MONTHS,
+    )
+
+
+def _parse_event_form(form):
+    title = form.get("title", "").strip()
+    event_date = form.get("event_date", "").strip()
+    description = form.get("description", "").strip() or None
+    is_valid = bool(title) and bool(event_date)
+    return {"title": title, "event_date": event_date, "description": description, "is_valid": is_valid}
+
+
+@bp.route("/events/add", methods=["GET", "POST"])
+def add_event():
+    if request.method == "POST":
+        data = _parse_event_form(request.form)
+        if not data["is_valid"]:
+            flash("נא למלא כותרת ותאריך לאירוע", "error")
+            return render_template("event_form.html", event=data, mode="add")
+
+        models.create_family_event(data["title"], data["event_date"], data["description"])
+        flash("האירוע נוסף בהצלחה", "success")
+        return redirect(url_for("main.dashboard"))
+
+    return render_template("event_form.html", event=None, mode="add")
+
+
+@bp.route("/events/<int:event_id>/edit", methods=["GET", "POST"])
+def edit_event(event_id):
+    event = models.get_family_event(event_id)
+    if event is None:
+        flash("האירוע לא נמצא", "error")
+        return redirect(url_for("main.dashboard"))
+
+    if request.method == "POST":
+        data = _parse_event_form(request.form)
+        if not data["is_valid"]:
+            flash("נא למלא כותרת ותאריך לאירוע", "error")
+            return render_template("event_form.html", event=data, mode="edit", event_id=event_id)
+
+        models.update_family_event(event_id, data["title"], data["event_date"], data["description"])
+        flash("האירוע עודכן בהצלחה", "success")
+        return redirect(url_for("main.dashboard"))
+
+    return render_template("event_form.html", event=event, mode="edit", event_id=event_id)
+
+
+@bp.route("/events/<int:event_id>/delete", methods=["POST"])
+def delete_event(event_id):
+    models.delete_family_event(event_id)
+    flash("האירוע נמחק", "success")
+    return redirect(url_for("main.dashboard"))
