@@ -16,10 +16,15 @@ app/
 ├── db.py           # חיבור ל-SQLite ואתחול הסכמה
 ├── models.py       # פונקציות CRUD מול טבלת family_members
 ├── routes.py       # ה-routes של האתר
+├── hebrew_numerals.py   # המרות בין מספרים לאותיות עבריות (יום/שנה)
+├── hebrew_calendar.py   # חישובי לוח עברי (מתי הבא, גיל, יום הולדת בתאריך נתון)
+├── jobs/
+│   └── birthday_job.py  # ה-Job היומי: מוצא ימי הולדת, מכין ברכה, "שולח" (כרגע רק log)
 ├── templates/      # תבניות HTML (Jinja)
 └── static/         # CSS ו-JS
 schema.sql          # הגדרת טבלת family_members
-run.py              # הרצת השרת
+run.py              # הרצת שרת האתר (Dashboard)
+run_scheduler.py    # תהליך נפרד שמריץ את ה-Job היומי בשעה קבועה
 ```
 
 ## התקנה והרצה מקומית
@@ -45,3 +50,19 @@ python run.py
 - `DATABASE_PATH` — נתיב לקובץ ה-SQLite.
 
 בעתיד, מפתחות API (כגון WhatsApp/AI) יתווספו לאותו קובץ `.env` ולא ייכנסו לקוד.
+
+## ה-Job היומי (Stage 3)
+
+`run_scheduler.py` הוא תהליך **נפרד** מהאתר עצמו - צריך להריץ אותו בנוסף ל-`run.py`, לא במקומו:
+
+```bash
+python run_scheduler.py
+```
+
+הוא רץ ברקע ובודק כל ערב (ברירת מחדל: 19:00 שעון ישראל, ניתן לשינוי ב-`.env` דרך `BIRTHDAY_JOB_HOUR`/`BIRTHDAY_JOB_MINUTE`) האם מישהו חוגג יום הולדת עברי שמתחיל באותו ערב. בשלב הזה הוא רק **רושם ל-log** מי היה מקבל ברכה - עדיין אין AI ואין שליחה בפועל ל-WhatsApp.
+
+לבדיקה מיידית בלי לחכות לשעה הקבועה:
+
+```bash
+python -m app.jobs.birthday_job
+```
