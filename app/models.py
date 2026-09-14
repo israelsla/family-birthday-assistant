@@ -11,9 +11,11 @@ UPCOMING_WINDOW_DAYS = 14
 
 
 def get_all_members():
-    """Return every family member, active and inactive, sorted by name."""
+    """Return every family member, active and inactive, oldest (highest age) first."""
     db = get_db()
-    return db.execute("SELECT * FROM family_members ORDER BY name").fetchall()
+    return db.execute(
+        "SELECT * FROM family_members ORDER BY hebrew_year IS NULL, hebrew_year ASC"
+    ).fetchall()
 
 
 def get_member(member_id):

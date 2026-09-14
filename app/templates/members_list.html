@@ -31,7 +31,6 @@
                 <td>
                     {% if age is not none %}
                     <span class="age-number">{{ age }}</span>
-                    <div class="candle-bar" title="{{ age }} שנים">{% for _ in range(age) %}🕯{% endfor %}</div>
                     {% else %}
                     -
                     {% endif %}
