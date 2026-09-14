@@ -16,13 +16,14 @@
                 <th>שם</th>
                 <th>תאריך עברי</th>
                 <th>גיל</th>
+                <th>יום נישואין</th>
                 <th>טלפון</th>
                 <th>סטטוס</th>
                 <th>פעולות</th>
             </tr>
         </thead>
         <tbody>
-            {% for member, age in members %}
+            {% for member, age, anniversary in members %}
             <tr class="{{ 'is-inactive' if not member.active }}">
                 <td>{{ member.name }}</td>
                 <td>
@@ -31,6 +32,20 @@
                 <td>
                     {% if age is not none %}
                     <span class="age-number">{{ age }}</span>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if anniversary %}
+                        {% set partner_name, marriage = anniversary %}
+                        {% if marriage.hebrew_day %}
+                        {{ member.name }} ו{{ partner_name }} - {{ marriage.hebrew_day | hebrew_day }} ב{{ marriage.hebrew_month }}{% if marriage.hebrew_year %} {{ marriage.hebrew_year | hebrew_year }}{% endif %}
+                        <a class="link-button" href="{{ url_for('main.edit_marriage', marriage_id=marriage.id) }}">עריכה</a>
+                        {% else %}
+                        לא ידוע
+                        <a class="link-button" href="{{ url_for('main.edit_marriage', marriage_id=marriage.id) }}">הוספה</a>
+                        {% endif %}
                     {% else %}
                     -
                     {% endif %}

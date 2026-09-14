@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}עריכת יום נישואין - Family Birthday Assistant{% endblock %}
+
+{% block content %}
+<h1 class="page-title">💍 יום נישואין: {{ marriage.spouse1_name }} ו{{ marriage.spouse2_name }}</h1>
+
+<form class="member-form" method="post">
+    <div class="form-row">
+        <label>
+            יום עברי
+            <input type="number" name="hebrew_day" min="1" max="30" required value="{{ marriage.hebrew_day or '' }}">
+        </label>
+
+        <label>
+            חודש עברי
+            <select name="hebrew_month" required>
+                <option value="" disabled {{ 'selected' if not marriage.hebrew_month }}>בחר/י חודש</option>
+                {% for month in hebrew_months %}
+                <option value="{{ month }}" {{ 'selected' if marriage.hebrew_month == month }}>{{ month }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            שנה עברית (לא חובה)
+            <input type="number" name="hebrew_year" value="{{ marriage.hebrew_year or '' }}">
+        </label>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="button">שמירה</button>
+        <a class="button button--secondary" href="{{ url_for('main.members_list') }}">ביטול</a>
+    </div>
+</form>
+{% endblock %}

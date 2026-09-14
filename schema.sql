@@ -12,3 +12,17 @@ CREATE TABLE IF NOT EXISTS family_members (
     active INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS marriages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    spouse1_id INTEGER NOT NULL REFERENCES family_members(id),
+    spouse2_id INTEGER NOT NULL REFERENCES family_members(id),
+    hebrew_day INTEGER CHECK (hebrew_day IS NULL OR hebrew_day BETWEEN 1 AND 30),
+    hebrew_month TEXT CHECK (hebrew_month IS NULL OR hebrew_month IN (
+        'תשרי', 'חשוון', 'כסלו', 'טבת', 'שבט',
+        'אדר', 'אדר א׳', 'אדר ב׳',
+        'ניסן', 'אייר', 'סיון', 'תמוז', 'אב', 'אלול'
+    )),
+    hebrew_year INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

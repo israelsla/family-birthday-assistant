@@ -40,17 +40,31 @@ def _parse_member_form(form):
 def dashboard():
     active_count = models.count_active_members()
     todays_birthdays, upcoming_birthdays = models.get_birthday_summary()
+    todays_anniversaries, upcoming_anniversaries = models.get_anniversary_summary()
+
+    todays_events = (
+        [{"icon": "🎂", "label": member["name"]} for member in todays_birthdays]
+        + [{"icon": "💍", "label": label} for label in todays_anniversaries]
+    )
+    upcoming_events = sorted(
+        [{"icon": "🎂", "label": member["name"], "days": days} for member, days in upcoming_birthdays]
+        + [{"icon": "💍", "label": label, "days": days} for label, days in upcoming_anniversaries],
+        key=lambda event: event["days"],
+    )
+
     return render_template(
         "dashboard.html",
         active_count=active_count,
         today_hebrew_date=models.today_hebrew_string(),
-        todays_birthdays=todays_birthdays,
-        upcoming_birthdays=upcoming_birthdays,
+        todays_events=todays_events,
+        upcoming_events=upcoming_events,
     )
 
 
 @bp.route("/members")
 def members_list():
+    anniversaries = models.get_anniversaries_by_member_id()
+
     members_with_age = []
     for member in models.get_all_members():
         age = None
@@ -58,7 +72,7 @@ def members_list():
             age = hebrew_calendar.age_in_years(
                 member["hebrew_day"], member["hebrew_month"], member["hebrew_year"]
             )
-        members_with_age.append((member, age))
+        members_with_age.append((member, age, anniversaries.get(member["id"])))
 
     return render_template("members_list.html", members=members_with_age)
 
@@ -130,3 +144,33 @@ def deactivate_member_route(member_id):
     models.deactivate_member(member_id)
     flash("בן המשפחה הושבת", "success")
     return redirect(url_for("main.members_list"))
+
+
+@bp.route("/marriages/<int:marriage_id>/edit", methods=["GET", "POST"])
+def edit_marriage(marriage_id):
+    marriage = models.get_marriage(marriage_id)
+    if marriage is None:
+        flash("הזוג לא נמצא", "error")
+        return redirect(url_for("main.members_list"))
+
+    if request.method == "POST":
+        hebrew_month = request.form.get("hebrew_month", "")
+        try:
+            hebrew_day = int(request.form.get("hebrew_day", ""))
+        except ValueError:
+            hebrew_day = None
+        hebrew_year_raw = request.form.get("hebrew_year", "").strip()
+        hebrew_year = int(hebrew_year_raw) if hebrew_year_raw.isdigit() else None
+
+        is_valid = hebrew_month in models.HEBREW_MONTHS and hebrew_day is not None and 1 <= hebrew_day <= 30
+        if not is_valid:
+            flash("נא למלא יום עברי תקין (1-30) וחודש עברי", "error")
+            return render_template(
+                "marriage_form.html", marriage=marriage, hebrew_months=models.HEBREW_MONTHS
+            )
+
+        models.update_marriage_date(marriage_id, hebrew_day, hebrew_month, hebrew_year)
+        flash("תאריך הנישואין עודכן בהצלחה", "success")
+        return redirect(url_for("main.members_list"))
+
+    return render_template("marriage_form.html", marriage=marriage, hebrew_months=models.HEBREW_MONTHS)

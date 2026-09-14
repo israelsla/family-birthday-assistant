@@ -12,29 +12,34 @@
         <div class="card__label">בני משפחה פעילים במערכת</div>
     </div>
 
-    <div class="card">
-        <div class="card__label card__label--title">🎉 ימי הולדת היום</div>
-        {% if todays_birthdays %}
-        <ul class="card-list">
-            {% for member in todays_birthdays %}
-            <li>{{ member.name }}</li>
+</div>
+
+<div class="events-card">
+    <h2 class="events-card__title">🎊 אירועים משפחתיים</h2>
+
+    <div class="events-section">
+        <h3 class="events-section__title">היום</h3>
+        {% if todays_events %}
+        <ul class="events-list">
+            {% for event in todays_events %}
+            <li><span class="events-list__icon">{{ event.icon }}</span> {{ event.label }}</li>
             {% endfor %}
         </ul>
         {% else %}
-        <div class="card__note">אין היום ימי הולדת</div>
+        <div class="card__note">אין היום אירועים משפחתיים</div>
         {% endif %}
     </div>
 
-    <div class="card">
-        <div class="card__label card__label--title">📅 ימי הולדת קרובים</div>
-        {% if upcoming_birthdays %}
-        <ul class="card-list">
-            {% for member, days in upcoming_birthdays %}
-            <li>{{ member.name }} - בעוד {{ days }} {{ 'יום' if days == 1 else 'ימים' }}</li>
+    <div class="events-section">
+        <h3 class="events-section__title">בשבועיים הקרובים</h3>
+        {% if upcoming_events %}
+        <ul class="events-list">
+            {% for event in upcoming_events %}
+            <li><span class="events-list__icon">{{ event.icon }}</span> {{ event.label }} - בעוד {{ event.days }} {{ 'יום' if event.days == 1 else 'ימים' }}</li>
             {% endfor %}
         </ul>
         {% else %}
-        <div class="card__note">אין ימי הולדת בשבועיים הקרובים</div>
+        <div class="card__note">אין אירועים משפחתיים בשבועיים הקרובים</div>
         {% endif %}
     </div>
 </div>

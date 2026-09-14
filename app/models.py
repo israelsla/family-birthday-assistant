@@ -91,3 +91,70 @@ def get_birthday_summary(within_days=UPCOMING_WINDOW_DAYS):
 
 def today_hebrew_string():
     return hebrew_today().hebrew_date_string()
+
+
+def get_all_marriages():
+    """Every couple, joined with both spouses' names."""
+    db = get_db()
+    return db.execute(
+        """
+        SELECT m.id, m.spouse1_id, m.spouse2_id, m.hebrew_day, m.hebrew_month, m.hebrew_year,
+               s1.name AS spouse1_name, s2.name AS spouse2_name
+        FROM marriages m
+        JOIN family_members s1 ON s1.id = m.spouse1_id
+        JOIN family_members s2 ON s2.id = m.spouse2_id
+        """
+    ).fetchall()
+
+
+def get_marriage(marriage_id):
+    db = get_db()
+    return db.execute(
+        """
+        SELECT m.id, m.spouse1_id, m.spouse2_id, m.hebrew_day, m.hebrew_month, m.hebrew_year,
+               s1.name AS spouse1_name, s2.name AS spouse2_name
+        FROM marriages m
+        JOIN family_members s1 ON s1.id = m.spouse1_id
+        JOIN family_members s2 ON s2.id = m.spouse2_id
+        WHERE m.id = ?
+        """,
+        (marriage_id,),
+    ).fetchone()
+
+
+def update_marriage_date(marriage_id, hebrew_day, hebrew_month, hebrew_year):
+    db = get_db()
+    db.execute(
+        "UPDATE marriages SET hebrew_day = ?, hebrew_month = ?, hebrew_year = ? WHERE id = ?",
+        (hebrew_day, hebrew_month, hebrew_year, marriage_id),
+    )
+    db.commit()
+
+
+def get_anniversaries_by_member_id():
+    """Map each member id in a couple to (partner_name, marriage_row) for the members list."""
+    result = {}
+    for marriage in get_all_marriages():
+        result[marriage["spouse1_id"]] = (marriage["spouse2_name"], marriage)
+        result[marriage["spouse2_id"]] = (marriage["spouse1_name"], marriage)
+    return result
+
+
+def get_anniversary_summary(within_days=UPCOMING_WINDOW_DAYS):
+    """Same idea as get_birthday_summary(), but for couples with a known anniversary date."""
+    today_list = []
+    upcoming_list = []
+
+    for marriage in get_all_marriages():
+        if not marriage["hebrew_day"]:
+            continue  # date not filled in yet
+
+        label = f'{marriage["spouse1_name"]} ו{marriage["spouse2_name"]}'
+        days = days_until(marriage["hebrew_day"], marriage["hebrew_month"])
+        if days == 0:
+            today_list.append(label)
+        elif days <= within_days:
+            upcoming_list.append((label, days))
+
+    upcoming_list.sort(key=lambda pair: pair[1])
+    return today_list, upcoming_list
