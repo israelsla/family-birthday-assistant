@@ -6,16 +6,34 @@ date, not today's - a Hebrew day begins at nightfall, so someone born on
 already religiously "א' ניסן" even though the Gregorian calendar still
 says "today."
 
-generate_greeting() and send_greeting() are placeholders on purpose: this
-is exactly where the AI-written blessing and the real WhatsApp send will
-plug in later, without touching find_members_with_birthday_on() or
-run_birthday_job().
+generate_greeting() builds the message from a fixed set of Hebrew templates
+- no AI, no external calls, no cost, nothing that can be "down." (An AI
+version was considered, but Anthropic's Consumer Terms only allow automated/
+unattended account access via a paid API key, which is exactly what this
+project avoids - see the commit message for details.)
+
+send_greeting() is still a placeholder on purpose: this is where the real
+WhatsApp send will plug in later, without touching find_members_with_birthday_on()
+or run_birthday_job().
 """
 import logging
+import random
 
 from app import hebrew_calendar, models
 
 logger = logging.getLogger(__name__)
+
+_GREETING_TEMPLATES_WITH_AGE = [
+    "🎉 מזל טוב ל{name}! היום חוגגים {age} שנים לפי הלוח העברי - שתהיה שנה מתוקה ומלאה בשמחה! 🎂",
+    "🎂 מזל טוב {name}! גיל {age} מתחיל היום - איחולים לשנה טובה, בריאה ומאושרת מכל המשפחה! 🎉",
+    "✨ {name} היקר/ה, מזל טוב ליום ההולדת ה-{age}! שתזכה/י לשנה של אהבה, בריאות והצלחה. 🎈",
+    "🎁 יום הולדת שמח ל{name}! היום נחגוג {age} שנים - כל הכבוד וכל האהבה מכל המשפחה! 🎊",
+]
+
+_GREETING_TEMPLATES_NO_AGE = [
+    "🎉 מזל טוב ל{name}! היום יום ההולדת העברי שלך - שתהיה שנה מתוקה ומלאה בשמחה! 🎂",
+    "🎂 מזל טוב {name}! איחולים לשנה טובה, בריאה ומאושרת, מכל המשפחה! 🎉",
+]
 
 
 def find_members_with_birthday_on(check_date):
@@ -27,8 +45,14 @@ def find_members_with_birthday_on(check_date):
 
 
 def generate_greeting(member):
-    """Placeholder greeting text - this is where a real AI-generated blessing plugs in later."""
-    return f"🎉 מזל טוב ל{member['name']}! היום יום ההולדת העברי שלו/ה 🎂"
+    """A warm Hebrew birthday greeting, picked from a fixed template set. No AI, no cost."""
+    if member["hebrew_year"]:
+        age = hebrew_calendar.age_in_years(member["hebrew_day"], member["hebrew_month"], member["hebrew_year"])
+        template = random.choice(_GREETING_TEMPLATES_WITH_AGE)
+        return template.format(name=member["name"], age=age)
+
+    template = random.choice(_GREETING_TEMPLATES_NO_AGE)
+    return template.format(name=member["name"])
 
 
 def send_greeting(member, greeting_text):
