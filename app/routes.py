@@ -1,6 +1,6 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
-from app import models
+from app import hebrew_calendar, models
 
 bp = Blueprint("main", __name__)
 
@@ -51,8 +51,16 @@ def dashboard():
 
 @bp.route("/members")
 def members_list():
-    members = models.get_all_members()
-    return render_template("members_list.html", members=members)
+    members_with_age = []
+    for member in models.get_all_members():
+        age = None
+        if member["hebrew_year"]:
+            age = hebrew_calendar.age_in_years(
+                member["hebrew_day"], member["hebrew_month"], member["hebrew_year"]
+            )
+        members_with_age.append((member, age))
+
+    return render_template("members_list.html", members=members_with_age)
 
 
 @bp.route("/members/add", methods=["GET", "POST"])

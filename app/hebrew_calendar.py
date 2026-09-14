@@ -63,3 +63,18 @@ def days_until(hebrew_day, hebrew_month, from_date=None):
     from_date = from_date or today()
     occurrence = next_occurrence(hebrew_day, hebrew_month, from_date)
     return occurrence - from_date
+
+
+def age_in_years(hebrew_day, hebrew_month, hebrew_year, from_date=None):
+    """Current age: years since birth, counting down by one until this year's birthday arrives."""
+    from_date = from_date or today()
+
+    month_number = month_number_for(hebrew_month, from_date.year)
+    days_in_month = len(hebrewcal.Month(from_date.year, month_number))
+    day = min(hebrew_day, days_in_month)
+    this_years_birthday = HebrewDate(from_date.year, month_number, day)
+
+    age = from_date.year - hebrew_year
+    if this_years_birthday > from_date:
+        age -= 1
+    return age

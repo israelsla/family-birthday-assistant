@@ -19,6 +19,10 @@ def create_app():
     from app.db import register_db
     register_db(app)
 
+    from app.hebrew_numerals import format_hebrew_day, format_hebrew_year
+    app.jinja_env.filters["hebrew_day"] = format_hebrew_day
+    app.jinja_env.filters["hebrew_year"] = format_hebrew_year
+
     from app.routes import bp
     app.register_blueprint(bp)
 

@@ -15,17 +15,26 @@
             <tr>
                 <th>שם</th>
                 <th>תאריך עברי</th>
+                <th>גיל</th>
                 <th>טלפון</th>
                 <th>סטטוס</th>
                 <th>פעולות</th>
             </tr>
         </thead>
         <tbody>
-            {% for member in members %}
+            {% for member, age in members %}
             <tr class="{{ 'is-inactive' if not member.active }}">
                 <td>{{ member.name }}</td>
                 <td>
-                    {{ member.hebrew_day }} ב{{ member.hebrew_month }}{% if member.hebrew_year %} {{ member.hebrew_year }}{% endif %}
+                    {{ member.hebrew_day | hebrew_day }} {{ member.hebrew_month }}{% if member.hebrew_year %} {{ member.hebrew_year | hebrew_year }}{% endif %}
+                </td>
+                <td>
+                    {% if age is not none %}
+                    <span class="age-number">{{ age }}</span>
+                    <div class="candle-bar" title="{{ age }} שנים">{% for _ in range(age) %}🕯{% endfor %}</div>
+                    {% else %}
+                    -
+                    {% endif %}
                 </td>
                 <td>{{ member.phone or '-' }}</td>
                 <td>

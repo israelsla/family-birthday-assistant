@@ -77,6 +77,62 @@ def normalize_month(raw):
     return MONTH_NORMALIZATION[raw]
 
 
+_TENS = [(90, "צ"), (80, "פ"), (70, "ע"), (60, "ס"), (50, "נ"), (40, "מ"), (30, "ל"), (20, "כ"), (10, "י")]
+_UNITS = [(9, "ט"), (8, "ח"), (7, "ז"), (6, "ו"), (5, "ה"), (4, "ד"), (3, "ג"), (2, "ב"), (1, "א")]
+_FINAL_FORMS = {"כ": "ך", "מ": "ם", "נ": "ן", "פ": "ף", "צ": "ץ"}
+
+
+def _letters_for_number(n):
+    """Raw Hebrew letters (no punctuation) for a positive integer, e.g. 27 -> 'כז'."""
+    letters = ""
+    remaining = n
+    while remaining >= 400:
+        letters += "ת"
+        remaining -= 400
+    for value, letter in [(300, "ש"), (200, "ר"), (100, "ק")]:
+        if remaining >= value:
+            letters += letter
+            remaining -= value
+            break
+
+    if remaining in (15, 16):
+        # avoid יה/יו, which look like God's name - use טו/טז instead
+        letters += "טו" if remaining == 15 else "טז"
+        return letters
+
+    for value, letter in _TENS:
+        if remaining >= value:
+            letters += letter
+            remaining -= value
+            break
+    for value, letter in _UNITS:
+        if remaining >= value:
+            letters += letter
+            remaining -= value
+            break
+    return letters
+
+
+def _punctuate(letters):
+    """Single letter gets a geresh (א׳); multiple letters get gershayim before the last (כ״ז)."""
+    if len(letters) <= 1:
+        return letters + "׳"
+    return letters[:-1] + "״" + letters[-1]
+
+
+def format_hebrew_day(day):
+    """27 -> 'כ״ז', 1 -> 'א׳', 30 -> 'ל׳'. No final-letter forms - a lone day numeral never uses them."""
+    return _punctuate(_letters_for_number(day))
+
+
+def format_hebrew_year(year, era_offset=HEBREW_YEAR_ERA_OFFSET):
+    """5750 -> 'תש״ן' (final nun, since it ends a year abbreviation, unlike a standalone day letter)."""
+    letters = _letters_for_number(year - era_offset)
+    if letters and letters[-1] in _FINAL_FORMS:
+        letters = letters[:-1] + _FINAL_FORMS[letters[-1]]
+    return _punctuate(letters)
+
+
 if __name__ == "__main__":
     # quick sanity checks against known values before trusting this on real data
     assert hebrew_letters_to_number("ט\"ז") == 16
@@ -91,4 +147,14 @@ if __name__ == "__main__":
     assert is_hebrew_leap_year(5737) is False
     assert normalize_month("מרחשון") == "חשוון"
     assert normalize_month("אדר א") == "אדר א׳"
+
+    # the reverse direction: numbers back into Hebrew letters
+    assert format_hebrew_day(19) == "י״ט"
+    assert format_hebrew_day(22) == "כ״ב"
+    assert format_hebrew_day(16) == "ט״ז"
+    assert format_hebrew_day(1) == "א׳"
+    assert format_hebrew_day(30) == "ל׳"
+    assert format_hebrew_year(5707) == "תש״ז"
+    assert format_hebrew_year(5786) == "תשפ״ו"
+    assert format_hebrew_year(5750) == "תש״ן"  # final-nun, matches the source PDF's own spelling
     print("כל בדיקות הסניטי עברו בהצלחה")

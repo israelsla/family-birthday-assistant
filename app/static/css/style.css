@@ -145,6 +145,21 @@ a {
     margin-top: -0.5rem;
 }
 
+.age-number {
+    font-weight: 700;
+    margin-inline-end: 0.4rem;
+}
+
+.candle-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    max-width: 140px;
+    font-size: 0.65rem;
+    line-height: 1.1;
+    color: var(--color-primary-dark);
+}
+
 .button {
     display: inline-block;
     background: var(--color-primary);
