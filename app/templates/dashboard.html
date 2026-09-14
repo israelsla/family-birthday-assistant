@@ -4,6 +4,7 @@
 
 {% block content %}
 <h1 class="page-title">🎂 Family Birthday Assistant</h1>
+<p class="today-hebrew-date">היום {{ today_hebrew_date }}</p>
 
 <div class="cards-grid">
     <div class="card">
@@ -11,16 +12,30 @@
         <div class="card__label">בני משפחה פעילים במערכת</div>
     </div>
 
-    <div class="card card--placeholder">
-        <div class="card__value">🎉</div>
-        <div class="card__label">ימי הולדת היום</div>
-        <div class="card__note">בקרוב - יחושב לפי הלוח העברי</div>
+    <div class="card">
+        <div class="card__label card__label--title">🎉 ימי הולדת היום</div>
+        {% if todays_birthdays %}
+        <ul class="card-list">
+            {% for member in todays_birthdays %}
+            <li>{{ member.name }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="card__note">אין היום ימי הולדת</div>
+        {% endif %}
     </div>
 
-    <div class="card card--placeholder">
-        <div class="card__value">📅</div>
-        <div class="card__label">ימי הולדת קרובים</div>
-        <div class="card__note">בקרוב - יחושב לפי הלוח העברי</div>
+    <div class="card">
+        <div class="card__label card__label--title">📅 ימי הולדת קרובים</div>
+        {% if upcoming_birthdays %}
+        <ul class="card-list">
+            {% for member, days in upcoming_birthdays %}
+            <li>{{ member.name }} - בעוד {{ days }} {{ 'יום' if days == 1 else 'ימים' }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="card__note">אין ימי הולדת בשבועיים הקרובים</div>
+        {% endif %}
     </div>
 </div>
 

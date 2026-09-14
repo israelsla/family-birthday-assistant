@@ -39,7 +39,14 @@ def _parse_member_form(form):
 @bp.route("/")
 def dashboard():
     active_count = models.count_active_members()
-    return render_template("dashboard.html", active_count=active_count)
+    todays_birthdays, upcoming_birthdays = models.get_birthday_summary()
+    return render_template(
+        "dashboard.html",
+        active_count=active_count,
+        today_hebrew_date=models.today_hebrew_string(),
+        todays_birthdays=todays_birthdays,
+        upcoming_birthdays=upcoming_birthdays,
+    )
 
 
 @bp.route("/members")

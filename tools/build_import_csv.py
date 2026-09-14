@@ -3,13 +3,22 @@
 This does NOT touch the SQLite database - it only converts Hebrew-letter
 dates into the numeric/normalized form our schema expects, and flags any
 row a human needs to look at before it's safe to import.
+
+Note: this always rebuilds family_import_review.csv from scratch, so
+re-running it after manually resolving a flagged row (like Meayan's
+ambiguous day) will wipe that fix out of the CSV - though not out of the
+database, since import_to_db.py only ever adds rows, never edits them.
+Reapply any manual fixes to the CSV before importing again.
 """
 import csv
 from pathlib import Path
 
-from hebrew_numerals import is_hebrew_leap_year, normalize_month, parse_hebrew_day, parse_hebrew_year
+import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE_DIR))
+
+from app.hebrew_numerals import normalize_month, parse_hebrew_day, parse_hebrew_year
 RAW_PATH = BASE_DIR / "data" / "family_raw.csv"
 REVIEW_PATH = BASE_DIR / "data" / "family_import_review.csv"
 
@@ -28,10 +37,9 @@ def build_review_rows():
                 notes.append(
                     f"יום לא חד-משמעי במקור ('{raw_row['hebrew_day_raw']}') - נא לבחור יום סופי"
                 )
-            if hebrew_month == "אדר" and is_hebrew_leap_year(hebrew_year):
-                notes.append(
-                    "שנה מעוברת אך המקור כתב 'אדר' סתם - נא לאשר אם הכוונה לאדר א׳ או אדר ב׳"
-                )
+            # A plain "אדר" is a valid stored value even in a leap year - which
+            # actual Adar it falls on each year is resolved at display time by
+            # app/hebrew_calendar.py, not here at import time.
 
             rows.append({
                 "name": name,
