@@ -129,6 +129,40 @@ a {
     margin-bottom: 0.5rem;
 }
 
+.today-banner {
+    background: linear-gradient(135deg, #ff8a5b, #ffb703, #ff8a5b);
+    background-size: 200% 200%;
+    animation: today-banner-shimmer 6s ease infinite;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(217, 123, 63, 0.35);
+}
+
+.today-banner__emoji {
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.today-banner__line {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.today-banner__line + .today-banner__line {
+    margin-top: 0.4rem;
+}
+
+@keyframes today-banner-shimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
 .events-card {
     background: linear-gradient(135deg, #fff6ee, #fff);
     border: 1px solid var(--color-primary);

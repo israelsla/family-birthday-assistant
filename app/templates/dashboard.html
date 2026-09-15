@@ -3,6 +3,18 @@
 {% block title %}דשבורד - Family Birthday Assistant{% endblock %}
 
 {% block content %}
+{% if todays_birthdays or todays_anniversaries %}
+<div class="today-banner">
+    <div class="today-banner__emoji">🎉🎂🎉</div>
+    {% for member in todays_birthdays %}
+    <div class="today-banner__line">היום יום ההולדת של <strong>{{ member.name }}</strong>!</div>
+    {% endfor %}
+    {% for label in todays_anniversaries %}
+    <div class="today-banner__line">היום יום הנישואין של <strong>{{ label }}</strong>! 💍</div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <h1 class="page-title">🎂 Family Birthday Assistant</h1>
 <p class="today-hebrew-date">היום {{ today_hebrew_date }}</p>
 
