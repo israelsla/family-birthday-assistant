@@ -11,8 +11,16 @@
         <div class="site-header__inner">
             <a class="brand" href="{{ url_for('main.dashboard') }}">🎂 Family Birthday Assistant</a>
             <nav class="main-nav">
+                {% if session.user_id %}
                 <a href="{{ url_for('main.dashboard') }}">בית</a>
                 <a href="{{ url_for('main.members_list') }}">כל בני המשפחה</a>
+                <form class="inline-form" method="post" action="{{ url_for('auth.logout') }}">
+                    <button type="submit" class="link-button">התנתקות</button>
+                </form>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}">התחברות</a>
+                <a href="{{ url_for('auth.signup') }}">הרשמה</a>
+                {% endif %}
             </nav>
         </div>
     </header>

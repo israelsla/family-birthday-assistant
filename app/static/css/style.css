@@ -65,6 +65,15 @@ a {
     color: var(--color-primary-dark);
 }
 
+.main-nav .link-button {
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.main-nav .link-button:hover {
+    color: var(--color-primary-dark);
+}
+
 .page {
     max-width: 960px;
     margin: 0 auto;

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}התחברות - Family Birthday Assistant{% endblock %}
+
+{% block content %}
+<h1 class="page-title">התחברות</h1>
+
+<form class="member-form" method="post">
+    <label>
+        אימייל
+        <input type="email" name="email" required value="{{ email }}">
+    </label>
+
+    <label>
+        סיסמה
+        <input type="password" name="password" required>
+    </label>
+
+    <div class="form-actions">
+        <button type="submit" class="button">התחברות</button>
+    </div>
+</form>
+
+<p class="empty-state">אין לך עדיין חשבון? <a href="{{ url_for('auth.signup') }}">הרשמת משפחה חדשה</a></p>
+{% endblock %}

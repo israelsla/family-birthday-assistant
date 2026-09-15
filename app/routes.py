@@ -1,8 +1,17 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from app import hebrew_calendar, models
 
 bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def require_login():
+    """Every route in this blueprint requires a logged-in session. auth.py's
+    routes (/login, /signup, /logout) live in a separate blueprint and are
+    the only pages reachable without one."""
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
 
 
 def _parse_member_form(form):

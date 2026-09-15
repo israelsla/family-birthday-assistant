@@ -221,3 +221,26 @@ def get_upcoming_family_events():
         days = (date.fromisoformat(event["event_date"]) - date.today()).days
         result.append((event, days))
     return result
+
+
+def get_user_by_email(email):
+    db = get_db()
+    return db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+
+
+def get_family(family_id):
+    db = get_db()
+    return db.execute("SELECT * FROM families WHERE id = ?", (family_id,)).fetchone()
+
+
+def create_family_with_user(family_name, email, password_hash):
+    """Sign-up: a brand new family with its first (admin) user. Returns the new family_id."""
+    db = get_db()
+    cursor = db.execute("INSERT INTO families (name) VALUES (?)", (family_name,))
+    family_id = cursor.lastrowid
+    db.execute(
+        "INSERT INTO users (family_id, email, password_hash, is_admin) VALUES (?, ?, ?, 1)",
+        (family_id, email, password_hash),
+    )
+    db.commit()
+    return family_id
