@@ -15,6 +15,10 @@ project avoids - see the commit message for details.)
 send_greeting() is still a placeholder on purpose: this is where the real
 WhatsApp send will plug in later, without touching find_members_with_birthday_on()
 or run_birthday_job().
+
+Since Stage 4 (multi-family support), this job loops over every family
+separately - each family's members are only ever compared against that
+same family's data.
 """
 import logging
 import random
@@ -36,10 +40,10 @@ _GREETING_TEMPLATES_NO_AGE = [
 ]
 
 
-def find_members_with_birthday_on(check_date):
+def find_members_with_birthday_on(check_date, family_id):
     return [
         member
-        for member in models.get_active_members()
+        for member in models.get_active_members(family_id)
         if hebrew_calendar.is_birthday_on(member["hebrew_day"], member["hebrew_month"], check_date)
     ]
 
@@ -61,15 +65,25 @@ def send_greeting(member, greeting_text):
 
 
 def run_birthday_job(check_date=None):
-    """The nightly job. check_date defaults to the Hebrew date that starts tonight."""
+    """The nightly job. check_date defaults to the Hebrew date that starts tonight.
+
+    Runs once per family - families never see each other's members.
+    """
     check_date = check_date or hebrew_calendar.tomorrow()
-    members = find_members_with_birthday_on(check_date)
+    families = models.get_all_families()
 
-    for member in members:
-        send_greeting(member, generate_greeting(member))
+    all_members_with_birthday = []
+    for family in families:
+        members = find_members_with_birthday_on(check_date, family["id"])
+        for member in members:
+            send_greeting(member, generate_greeting(member))
+        all_members_with_birthday.extend(members)
 
-    logger.info("Birthday job checked %s - found %d birthday(s)", check_date, len(members))
-    return members
+    logger.info(
+        "Birthday job checked %s across %d family/families - found %d birthday(s)",
+        check_date, len(families), len(all_members_with_birthday),
+    )
+    return all_members_with_birthday
 
 
 if __name__ == "__main__":
