@@ -1,5 +1,21 @@
+CREATE TABLE IF NOT EXISTS families (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    family_id INTEGER NOT NULL REFERENCES families(id),
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    is_admin INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS family_members (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    family_id INTEGER NOT NULL REFERENCES families(id),
     name TEXT NOT NULL,
     hebrew_day INTEGER NOT NULL CHECK (hebrew_day BETWEEN 1 AND 30),
     hebrew_month TEXT NOT NULL CHECK (hebrew_month IN (
@@ -15,6 +31,7 @@ CREATE TABLE IF NOT EXISTS family_members (
 
 CREATE TABLE IF NOT EXISTS marriages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    family_id INTEGER NOT NULL REFERENCES families(id),
     spouse1_id INTEGER NOT NULL REFERENCES family_members(id),
     spouse2_id INTEGER NOT NULL REFERENCES family_members(id),
     hebrew_day INTEGER CHECK (hebrew_day IS NULL OR hebrew_day BETWEEN 1 AND 30),
@@ -29,6 +46,7 @@ CREATE TABLE IF NOT EXISTS marriages (
 
 CREATE TABLE IF NOT EXISTS family_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    family_id INTEGER NOT NULL REFERENCES families(id),
     title TEXT NOT NULL,
     event_date TEXT NOT NULL,
     description TEXT,
