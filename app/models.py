@@ -243,11 +243,6 @@ def get_family(family_id):
     return db.execute("SELECT * FROM families WHERE id = ?", (family_id,)).fetchone()
 
 
-def get_all_families():
-    db = get_db()
-    return db.execute("SELECT * FROM families").fetchall()
-
-
 def create_family_with_user(family_name, email, password_hash):
     """Sign-up: a brand new family with its first (admin) user. Returns the new family_id."""
     db = get_db()

@@ -31,16 +31,6 @@ def today():
     return HebrewDate.today()
 
 
-def tomorrow():
-    """The Hebrew date that begins tonight at nightfall.
-
-    A Hebrew day starts at sunset, not midnight - so an evening job checking
-    "who has a birthday tonight" should compare against tomorrow's Hebrew
-    date, not today's.
-    """
-    return today() + 1
-
-
 def is_leap_year(hebrew_year):
     return hebrewcal.Year(hebrew_year).leap
 
@@ -67,14 +57,6 @@ def next_occurrence(hebrew_day, hebrew_month, from_date=None):
             return candidate
 
     raise RuntimeError("could not find a next occurrence within one year - this should not happen")
-
-
-def is_birthday_on(hebrew_day, hebrew_month, on_date):
-    """Does this recorded day/month fall exactly on on_date (a HebrewDate)?"""
-    month_number = month_number_for(hebrew_month, on_date.year)
-    days_in_month = len(hebrewcal.Month(on_date.year, month_number))
-    day = min(hebrew_day, days_in_month)
-    return on_date.month == month_number and on_date.day == day
 
 
 def days_until(hebrew_day, hebrew_month, from_date=None):
