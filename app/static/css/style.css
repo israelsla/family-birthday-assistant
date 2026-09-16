@@ -339,6 +339,14 @@ a {
     color: var(--color-text);
 }
 
+.hp-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 .member-form input,
 .member-form select {
     font: inherit;
